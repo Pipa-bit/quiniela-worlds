@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildLeaderboard,
   buildStats,
+  positionHistory,
   isValidScore,
   possibleScores,
   scorePrediction,
@@ -125,6 +126,23 @@ describe('clasificación y desempates', () => {
   it('sin jornada anterior no hay flechas', () => {
     const m = match({ score_a: 1, score_b: 0 })
     expect(buildLeaderboard([ana], [m], [pred(1, m, 1, 0)])[0].change).toBeNull()
+  })
+})
+
+describe('histórico de posiciones', () => {
+  it('da el puesto de cada jugador tras cada partido, en orden cronológico', () => {
+    const ana = player(1, 'Ana'), beto = player(2, 'Beto')
+    const late = match({ start_time: '2026-10-24T16:00:00Z', score_a: 0, score_b: 1 })
+    const early = match({ start_time: '2026-10-23T16:00:00Z', score_a: 1, score_b: 0 })
+    const pending = match({ start_time: '2026-10-25T16:00:00Z' })
+    const preds = [pred(1, early, 0, 1), pred(2, early, 1, 0), pred(1, late, 0, 1), pred(1, pending, 1, 0)]
+    const h = positionHistory([ana, beto], [late, early, pending], preds)
+    expect(h.map((s) => s.match.id)).toEqual([early.id, late.id])
+    expect(h[0].positions.get(2)).toBe(1)
+    expect(h[0].positions.get(1)).toBe(2)
+    // Tras el segundo partido empatan a 1 punto y comparten puesto
+    expect(h[1].positions.get(1)).toBe(1)
+    expect(h[1].positions.get(2)).toBe(1)
   })
 })
 

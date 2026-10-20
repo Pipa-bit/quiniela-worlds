@@ -125,26 +125,51 @@ function MatchCard({ match: m, me, now }: { match: Match; me: Player; now: numbe
   const scores = possibleScores(m.best_of)
   const half = scores.length / 2
 
+  const wonA = hasResult && m.score_a! > m.score_b!
+  const wonB = hasResult && m.score_b! > m.score_a!
+  const myResult = saved && hasResult ? scorePrediction(m, saved) : null
+  const urgent = open && msLeft < 60 * 60 * 1000
+
   return (
-    <article className={`match ${open && !saved ? 'missing' : ''}`}>
+    <article className={`match fade-in ${open && !saved ? 'missing' : ''} ${hasResult ? 'finished' : ''}`}>
       <div className="match-head">
-        <span>{matchLabel(m)} · Bo{m.best_of}</span>
+        <span className="tags">
+          <span className="tag">{matchLabel(m)}</span>
+          <span className="tag bo">Bo{m.best_of}</span>
+        </span>
         <span>
-          {madridTime(m.start_time)} · <b className={open ? 'accent' : ''}>{status}</b>
+          {madridTime(m.start_time)} · <b className={`${open ? 'accent' : ''} ${urgent ? 'urgent' : ''}`}>{status}</b>
         </span>
       </div>
 
       <div className="teams">
-        <div className={`team ${hasResult && m.score_a! > m.score_b! ? 'won' : ''} ${hasResult && m.score_a! < m.score_b! ? 'lost' : ''}`}>
-          <TeamLogo team={A} size={44} />
-          <span>{A?.short}</span>
+        <div className={`team ${wonA ? 'won' : ''} ${wonB ? 'lost' : ''}`}>
+          <TeamLogo team={A} size={56} />
+          <span className="team-short">{A?.short}</span>
+          {A && A.name !== A.short && <span className="team-name">{A.name}</span>}
         </div>
-        <div className="score">{hasResult ? `${m.score_a} - ${m.score_b}` : 'vs'}</div>
-        <div className={`team ${hasResult && m.score_b! > m.score_a! ? 'won' : ''} ${hasResult && m.score_b! < m.score_a! ? 'lost' : ''}`}>
-          <TeamLogo team={B} size={44} />
-          <span>{B?.short}</span>
+        {hasResult ? (
+          <div className="score">
+            <span className={wonA ? 'win' : ''}>{m.score_a}</span>
+            <span className="score-sep">:</span>
+            <span className={wonB ? 'win' : ''}>{m.score_b}</span>
+          </div>
+        ) : (
+          <div className="vs">VS</div>
+        )}
+        <div className={`team ${wonB ? 'won' : ''} ${wonA ? 'lost' : ''}`}>
+          <TeamLogo team={B} size={56} />
+          <span className="team-short">{B?.short}</span>
+          {B && B.name !== B.short && <span className="team-name">{B.name}</span>}
         </div>
       </div>
+
+      {myResult && saved && (
+        <div className={`my-result ${myResult.points ? 'good' : 'bad'}`}>
+          <span>Tu predicción: {pickText(m, saved.score_a, saved.score_b, team)}</span>
+          <b>{myResult.exact ? '🎯 Exacto' : myResult.winner ? '✓ Acierto' : '✗ Fallo'} · +{myResult.points}</b>
+        </div>
+      )}
 
       {open ? (
         m.best_of === 1 ? (

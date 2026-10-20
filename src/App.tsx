@@ -57,9 +57,15 @@ function Shell() {
   return (
     <div className="app">
       <header className="topbar">
-        <span className="brand">Quiniela Worlds 2026</span>
+        <span className="brand">
+          <span className="brand-mark">◆</span>
+          <span className="brand-text">
+            <span className="brand-title">LMBL Quiniela</span>
+            <span className="brand-sub">Worlds 2026</span>
+          </span>
+        </span>
         <button
-          className="link"
+          className="link me-chip"
           onClick={() => {
             if (confirm(`¿Salir como ${me.name}?`)) {
               session.logout()
@@ -71,7 +77,9 @@ function Shell() {
         </button>
       </header>
       {error && <div className="banner error">No se pudo actualizar: {error}</div>}
-      <main>{page}</main>
+      <main key={route} className="page">
+        {page}
+      </main>
       <nav className="tabbar">
         {TABS.map((t) => (
           <a key={t.path} href={`#${t.path}`} className={route === t.path ? 'active' : ''}>
