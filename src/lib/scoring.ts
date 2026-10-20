@@ -218,3 +218,33 @@ export function swissStandings(teams: Team[], matches: Match[]): SwissRow[] {
     (x, y) => y.wins - y.losses - (x.wins - x.losses) || y.wins - x.wins || x.team.short.localeCompare(y.team.short),
   )
 }
+
+/** Equipo ganador de un partido con resultado, o null. */
+export const winnerId = (m?: Match | null) =>
+  m && m.score_a != null && m.score_b != null ? (m.score_a > m.score_b ? m.team_a : m.team_b) : null
+
+const byTime = (x: Match, y: Match) => Date.parse(x.start_time) - Date.parse(y.start_time) || x.id - y.id
+
+/**
+ * Coloca los cruces en el árbol: cada semifinal se alimenta de los dos cuartos cuyos ganadores juega.
+ * Si aún no se sabe, se usa el orden por hora. Los huecos sin partido quedan como "Por decidir".
+ */
+export function arrangeBracket(matches: Match[]): { qf: (Match | null)[]; sf: (Match | null)[]; final: Match | null } {
+  const qfs = matches.filter((m) => m.stage === 'qf').sort(byTime).slice(0, 4)
+  const sfs = matches.filter((m) => m.stage === 'sf').sort(byTime).slice(0, 2)
+  const final = matches.filter((m) => m.stage === 'final').sort(byTime)[0] ?? null
+  const sf: (Match | null)[] = [sfs[0] ?? null, sfs[1] ?? null]
+  const qf: (Match | null)[] = [null, null, null, null]
+  const left = [...qfs]
+  const take = (teamId: number) => {
+    const i = left.findIndex((m) => winnerId(m) === teamId)
+    return i >= 0 ? left.splice(i, 1)[0] : null
+  }
+  sf.forEach((s, k) => {
+    if (!s) return
+    qf[k * 2] = take(s.team_a)
+    qf[k * 2 + 1] = take(s.team_b)
+  })
+  for (let i = 0; i < 4; i++) if (!qf[i] && left.length) qf[i] = left.shift()!
+  return { qf, sf, final }
+}

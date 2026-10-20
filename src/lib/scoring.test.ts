@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  arrangeBracket,
   buildLeaderboard,
   buildStats,
   positionHistory,
@@ -198,5 +199,26 @@ describe('hora de Madrid', () => {
     expect(countdown(0)).toBe('cerrado')
     expect(countdown(90 * 1000)).toBe('1 min')
     expect(countdown((2 * 86400 + 4 * 3600) * 1000)).toBe('2 d 4 h')
+  })
+})
+
+describe('cuadro de eliminatorias', () => {
+  it('coloca cada cuarto bajo la semifinal que juega su ganador', () => {
+    const q = [
+      match({ stage: 'qf', round: null, team_a: 1, team_b: 2, score_a: 3, score_b: 0, start_time: '2026-11-01T10:00:00Z' }),
+      match({ stage: 'qf', round: null, team_a: 3, team_b: 4, score_a: 0, score_b: 3, start_time: '2026-11-01T14:00:00Z' }),
+      match({ stage: 'qf', round: null, team_a: 5, team_b: 6, score_a: 3, score_b: 1, start_time: '2026-11-02T10:00:00Z' }),
+      match({ stage: 'qf', round: null, team_a: 7, team_b: 8, score_a: 1, score_b: 3, start_time: '2026-11-02T14:00:00Z' }),
+    ]
+    // La primera semi enfrenta al ganador del 1.º cuarto con el del 3.º
+    const s1 = match({ stage: 'sf', round: null, team_a: 1, team_b: 5, start_time: '2026-11-08T10:00:00Z' })
+    const b = arrangeBracket([...q, s1])
+    expect(b.qf.map((m) => m?.id)).toEqual([q[0].id, q[2].id, q[1].id, q[3].id])
+    expect(b.sf).toEqual([s1, null])
+    expect(b.final).toBeNull()
+  })
+
+  it('deja huecos vacíos si aún no hay cruces', () => {
+    expect(arrangeBracket([])).toEqual({ qf: [null, null, null, null], sf: [null, null], final: null })
   })
 })
