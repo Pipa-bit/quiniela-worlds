@@ -94,7 +94,9 @@ main { padding: 12px 16px; }
 .team.lost { opacity: 0.45; }
 .score { font-size: 1.4rem; font-weight: 800; color: var(--muted); min-width: 64px; text-align: center; }
 
-.logo { border-radius: 8px; object-fit: contain; background: #0003; flex-shrink: 0; }
+.logo { border-radius: 8px; object-fit: contain; flex-shrink: 0; }
+/* Gris medio: que se distingan tanto los logos negros como los blancos */
+img.logo { background: #8b93a1; padding: 3px; }
 .logo-fallback {
   display: inline-grid; place-items: center; background: var(--panel-2); color: var(--muted);
   font-weight: 800; border: 1px solid var(--line);
