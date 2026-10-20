@@ -27,7 +27,10 @@ export default function Login({ onLogin, error }: { onLogin: (playerId: number) 
     <div className="center-screen">
       <div className="login">
         <div className="hero">🏆</div>
-        <h1>Quiniela Worlds 2026</h1>
+        <h1 className="login-title">
+          LMBL Quiniela
+          <span>Worlds 2026</span>
+        </h1>
         {error && <div className="banner error">{error}</div>}
         {!ok ? (
           <form onSubmit={check} className="stack">

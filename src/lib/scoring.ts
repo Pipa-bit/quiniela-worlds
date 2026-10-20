@@ -111,6 +111,23 @@ export function buildLeaderboard(players: Player[], matches: Match[], prediction
   return current.map((r) => ({ ...r, change: (prevPos.get(r.player.id) ?? r.position) - r.position }))
 }
 
+export interface HistoryStep {
+  match: Match
+  /** Puesto de cada jugador (por id) justo después de este partido. */
+  positions: Map<number, number>
+}
+
+/** Evolución de la clasificación: el puesto de cada jugador tras cada partido con resultado, en orden cronológico. */
+export function positionHistory(players: Player[], matches: Match[], predictions: Prediction[]): HistoryStep[] {
+  const finished = matches
+    .filter((m) => m.score_a != null && m.score_b != null)
+    .sort((x, y) => Date.parse(x.start_time) - Date.parse(y.start_time) || x.id - y.id)
+  return finished.map((match, i) => ({
+    match,
+    positions: new Map(rank(players, finished.slice(0, i + 1), predictions).map((r) => [r.player.id, r.position])),
+  }))
+}
+
 export interface PlayerStats {
   player: Player
   played: number
